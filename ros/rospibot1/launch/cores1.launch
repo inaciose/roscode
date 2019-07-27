@@ -1,0 +1,13 @@
+<launch>
+ <rosparam param="diff_rate">10</rosparam>
+ <rosparam param="base_width">0.2</rosparam>
+ <rosparam param="ticks_meter">8988</rosparam>
+ <rosparam param="base_frame_id">/base_link</rosparam>
+ <rosparam param="odom_frame_id">/odom</rosparam>
+
+ <node pkg="rosserial_python" type="serial_node.py" name="rosserial" output="screen">
+  <param name="port" value="/dev/ttyS1" />
+  <param name="baud" value="460800" />
+ </node>
+ <node pkg="rospibot1" type="diff_tf.py" name="diff_tf" output="screen"/>
+</launch>

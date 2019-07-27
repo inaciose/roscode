@@ -1,0 +1,251 @@
+<?xml version='1.0'?>
+<robot name="rospibot_model_06">
+
+  <material name="red">
+    <color rgba="0.8 0 0 1"/>
+  </material>
+
+  <material name="green">
+    <color rgba="0 0.8 0 1"/>
+  </material>
+
+  <material name="blue">
+    <color rgba="0 0 0.8 1"/>
+  </material>
+
+  <material name="white">
+    <color rgba="1 1 1 1"/>
+  </material>
+
+  <material name="black">
+    <color rgba="0 0 0 1"/>
+  </material>
+
+  <material name="transparent">
+    <color rgba="1 1 1 0.1"/>
+  </material>
+  
+  <!-- Base Link -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="-0.035 0 0" rpy="0 0 0" />
+      <geometry>
+	<box size="0.21 0.18 0.02"/>
+      </geometry>
+      <material name="white" />
+    </visual>
+
+    <!-- Base Simulator -->
+    <collision>
+      <origin xyz="0 -0.035 0" rpy="0 0 0" />
+      <geometry>
+          <box size="0.21 0.18 0.02"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="5"/>
+      <inertia ixx="0.13" ixy="0.0" ixz="0.0" iyy="0.21" iyz="0.0" izz="0.13"/>
+    </inertial>
+
+    <!-- Caster -->
+    <visual name="caster">
+      <origin xyz="-0.09 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.034" />
+      </geometry>
+      <material name="black" />
+    </visual> 
+
+    <!-- Caster Simulator -->
+    <collision>
+      <origin xyz="-0.09 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.034" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.034"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+
+  <!-- ultrasound0 -->
+  <link name="ultrasound0">
+    <visual name="ultrasound0">
+      <origin xyz="0 0 0" rpy="0 0 1.570795" />
+      <geometry>
+        <box size="0.03 0.015 0.05"/>
+      </geometry>
+      <material name="green" />
+    </visual>
+  </link>
+  <joint name="joint_ultrasound0" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasound0"/>
+    <origin xyz="0.05 0.10 0.03" rpy="0 0 1.570795" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  <!-- ultrasound1 -->
+  <link name="ultrasound1">
+    <visual name="ultrasound1">
+      <origin xyz="0 0 0" rpy="0 0 1.570795" />
+      <geometry>
+        <box size="0.03 0.015 0.05"/>
+      </geometry>
+      <material name="green" />
+    </visual>
+  </link>
+  <joint name="joint_ultrasound1" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasound1"/>
+    <origin xyz="0.075 0.08 0.03" rpy="0 0 0.7853975" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  <!-- ultrasound2 -->
+  <link name="ultrasound2">
+    <visual name="ultrasound2">
+      <origin xyz="0 0 0" rpy="0 0 1.570795" />
+      <geometry>
+        <box size="0.03 0.015 0.05"/>
+      </geometry>
+      <material name="green" />
+    </visual>
+  </link>
+  <joint name="joint_ultrasound2" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasound2"/>
+    <origin xyz="0.08 0.05 0.03" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  <!-- ultrasound3 -->
+  <link name="ultrasound3">
+    <visual name="ultrasound3">
+      <origin xyz="0 0 0" rpy="0 1.570795 1.570795" />
+      <geometry>
+        <box size="0.03 0.015 0.05"/>
+      </geometry>
+      <material name="green" />
+    </visual>
+  </link>
+  <joint name="joint_ultrasound3" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasound3"/>
+    <origin xyz="0.065 0 0.01" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  <!-- ultrasound4 -->
+  <link name="ultrasound4">
+    <visual name="ultrasound4">
+      <origin xyz="0 0 0" rpy="0 0 1.570795" />
+      <geometry>
+        <box size="0.03 0.015 0.05"/>
+      </geometry>
+      <material name="green" />
+    </visual>
+  </link>
+  <joint name="joint_ultrasound4" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasound4"/>
+    <origin xyz="0.08 -0.05 0.03" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+
+  <!-- ultrasound5 -->
+  <link name="ultrasound5">
+    <visual name="ultrasound5">
+      <origin xyz="0 0 0" rpy="0 0 -1.570795" />
+      <geometry>
+        <box size="0.03 0.015 0.05"/>
+      </geometry>
+      <material name="green" />
+    </visual>
+  </link>
+  <joint name="joint_ultrasound5" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasound5"/>
+    <origin xyz="0.075 -0.08 0" rpy="0 0 -0.7853975" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  <!-- ultrasound6 -->
+  <link name="ultrasound6">
+    <visual name="ultrasound6">
+      <origin xyz="0 0 0" rpy="0 0 -1.570795" />
+      <geometry>
+        <box size="0.03 0.015 0.05"/>
+      </geometry>
+      <material name="green" />
+    </visual>
+  </link>
+  <joint name="joint_ultrasound6" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasound6"/>
+    <origin xyz="0.05 -0.1 0.03" rpy="0 0 -1.570795" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  
+  <!-- Right Wheel -->
+  <link name="right_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570795 0 0" />
+      <geometry>
+          <cylinder length="0.01" radius="0.034" />
+      </geometry>
+    </visual>
+
+    <!-- Right Wheel Simulator -->
+    <collision>
+      <origin xyz="0 0 0" rpy="1.570795 0 0" />
+      <geometry>
+          <cylinder length="0.01" radius="0.034" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.5"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.005" iyz="0.0" izz="0.005"/>
+    </inertial>
+  </link>
+
+  <joint name="joint_right_wheel" type="continuous">
+    <parent link="base_link"/>
+    <child link="right_wheel"/>
+    <origin xyz="0 -0.10 0" rpy="0 0 0" /> 
+    <axis xyz="0 1 0" />
+  </joint>
+
+  <!-- Left Wheel -->
+  <link name="left_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570795 0 0" />
+      <geometry>
+          <cylinder length="0.01" radius="0.034" />
+      </geometry>
+    </visual>
+
+    <!-- Left Wheel Simulator -->
+    <collision>
+      <origin xyz="0 0 0" rpy="1.570795 0 0" />
+      <geometry>
+          <cylinder length="0.01" radius="0.034" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.5"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.005" iyz="0.0" izz="0.005"/>
+    </inertial>
+  </link>
+
+  <joint name="joint_left_wheel" type="continuous">
+    <parent link="base_link"/>
+    <child link="left_wheel"/>
+    <origin xyz="0 0.1 0" rpy="0 0 0" /> 
+    <axis xyz="0 1 0" />
+  </joint>
+</robot>

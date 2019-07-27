@@ -1,0 +1,20 @@
+<launch>
+ <rosparam param="diff_rate">10</rosparam>
+ <rosparam param="base_width">0.2</rosparam>
+ <rosparam param="ticks_meter">8988</rosparam>
+ <rosparam param="base_frame_id">/base_link</rosparam>
+ <rosparam param="odom_frame_id">/odom</rosparam>
+
+ <!--<arg name="urdf_file" default="$(find rospibot1)/urdf/test.urdf" />-->
+ <param name="robot_description" textfile="$(find rospibot1)/urdf/rospibot_model_07.urdf" />
+
+ <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+  <param name="publish_frequency" type="double" value="5.0" />
+ </node>
+
+ <node pkg="rosserial_python" type="serial_node.py" name="rosserial" output="screen">
+  <param name="port" value="/dev/ttyS1" />
+  <param name="baud" value="115200" />
+ </node>
+ <node pkg="rospibot1" type="diff_tf.py" name="diff_tf" output="screen"/>
+</launch>
