@@ -1,0 +1,210 @@
+//
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include "ros/ros.h"
+#include "vl53l0x_api.h"
+#include "vl53l0x_platform.h"
+
+// VL53L0X address id
+#define I2C_ADDR_DEV 0x29
+
+// VL53L0X required firmware version
+#define VERSION_REQUIRED_MAJOR 1
+#define VERSION_REQUIRED_MINOR 0
+#define VERSION_REQUIRED_BUILD 1
+
+VL53L0X_Error init_vl53l0x(VL53L0X_Dev_t *pvl53l0x_device) {
+    VL53L0X_Error device_status = VL53L0X_ERROR_NONE;
+    //VL53L0X_RangingMeasurementData_t RangingMeasurementData;
+    uint32_t refSpadCount;
+    uint8_t isApertureSpads;
+    uint8_t VhvSettings;
+    uint8_t PhaseCal;
+    //int i;
+
+    if(device_status == VL53L0X_ERROR_NONE) {
+        printf ("Call of VL53L0X_StaticInit\n");
+        Status = VL53L0X_StaticInit(pvl53l0x_device); 
+        print_pal_error(Status);
+    }
+    
+    if(device_status == VL53L0X_ERROR_NONE) {
+        printf ("Call of VL53L0X_PerformRefCalibration\n");
+        Status = VL53L0X_PerformRefCalibration(pvl53l0x_device, &VhvSettings, &PhaseCal);
+        print_pal_error(Status);
+    }
+
+    if(device_status == VL53L0X_ERROR_NONE) {
+        printf ("Call of VL53L0X_PerformRefSpadManagement\n");
+        Status = VL53L0X_PerformRefSpadManagement(pvl53l0x_device, &refSpadCount, &isApertureSpads);
+        printf ("refSpadCount = %d, isApertureSpads = %d\n", refSpadCount, isApertureSpads);
+        print_pal_error(Status);
+    }
+
+    if(device_status == VL53L0X_ERROR_NONE) {
+        // setup continuous ranging mode (not required for VL53L0X_PerformSingleRangingMeasurement)
+        printf ("Call of VL53L0X_SetDeviceMode\n");
+        device_status = VL53L0X_SetDeviceMode(pvl53l0x_device, VL53L0X_DEVICEMODE_CONTINUOUS_RANGING);
+        print_pal_error(Status);
+    }
+
+    // Setup high speed measurement			
+    if (device_status == VL53L0X_ERROR_NONE) {
+        device_status = VL53L0X_SetLimitCheckValue(pMyDevice,
+			VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
+        		(FixPoint1616_t)(0.25*65536));
+	}			
+    if (device_status == VL53L0X_ERROR_NONE) {
+        device_status = VL53L0X_SetLimitCheckValue(pMyDevice,
+        		VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
+        		(FixPoint1616_t)(32*65536));			
+    }
+    if (device_status == VL53L0X_ERROR_NONE) {
+        device_status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(pvl53l0x_device, 20000);
+    }
+
+    return device_status;
+}
+
+void setup_vl53l0x(VL53L0X_Dev_t *pvl53l0x_device) {
+    VL53L0X_Version_t device_version;
+    VL53L0X_Version_t *pdevice_version   = &device_version;
+    VL53L0X_DeviceInfo_t device_info;
+    int32_t status_int;
+    
+    // set device address
+    pvl53l0x_device->I2cDevAddr = I2C_ADDR_DEV;
+
+    // select i2c-0 or i2c-1
+    pvl53l0x_device->fd = VL53L0X_i2c_init("/dev/i2c-1", pvl53l0x_device->I2cDevAddr);
+
+    if (vl53l0x_device.fd < 0) {
+        device_status = VL53L0X_ERROR_CONTROL_INTERFACE;
+        printf ("Failed to init\n");
+    }
+
+    //g et the version of the VL53L0X API running in the firmware
+    if(device_status == VL53L0X_ERROR_NONE) {
+        status_int = VL53L0X_GetVersion(pdevice_version);
+        if (status_int != 0)
+            device_status = VL53L0X_ERROR_CONTROL_INTERFACE;
+    }
+
+    // verify the version of the VL53L0X API running in the firmware
+    if(device_status == VL53L0X_ERROR_NONE) {
+        if( pdevice_version->major != VERSION_REQUIRED_MAJOR ||
+            pdevice_version->minor != VERSION_REQUIRED_MINOR ||
+            pdevice_version->build != VERSION_REQUIRED_BUILD ) {
+            printf("VL53L0X API Version Error: firmware has %d.%d.%d (revision %d). Software requires %d.%d.%d.\n",
+                pdevice_version->major, pdevice_version->minor, pdevice_version->build, pdevice_version->revision,
+                VERSION_REQUIRED_MAJOR, VERSION_REQUIRED_MINOR, VERSION_REQUIRED_BUILD);
+        }
+    }
+
+    // VL53L0X data initialization
+    if(device_status == VL53L0X_ERROR_NONE) {
+        printf ("Call of VL53L0X_DataInit\n");
+        device_status = VL53L0X_DataInit(&vl53l0x_device);
+        print_pal_error(device_status);
+    }
+
+    // VL53L0X device information
+    if(device_status == VL53L0X_ERROR_NONE) {
+        device_status = VL53L0X_GetDeviceInfo(&vl53l0x_device, &device_info);
+        if(device_status == VL53L0X_ERROR_NONE) {
+            printf("VL53L0X_GetDeviceInfo:\n");
+            printf("Device Name : %s\n", device_info.Name);
+            printf("Device Type : %s\n", device_info.Type);
+            printf("Device ID : %s\n", device_info.ProductId);
+            printf("ProductRevisionMajor : %d\n", device_info.ProductRevisionMajor);
+            printf("ProductRevisionMinor : %d\n", device_info.ProductRevisionMinor);
+
+        if ((device_info.ProductRevisionMinor != 1) && (device_info.ProductRevisionMinor != 1)) {
+        	printf("Error expected cut 1.1 but found cut %d.%d\n",
+                       device_info.ProductRevisionMajor, device_info.ProductRevisionMinor);
+                device_status = VL53L0X_ERROR_NOT_SUPPORTED;
+            }
+        }
+        print_pal_error(device_status);
+    }
+
+    // VL53L0X Initialize
+    if(device_status == VL53L0X_ERROR_NONE) {
+        device_status = InitializeDevice(pvl53l0x_device);
+    }
+
+}
+
+void print_pal_error(VL53L0X_Error device_status){
+    char buf[VL53L0X_MAX_STRING_LENGTH];
+    VL53L0X_GetPalErrorString(device_status, buf);
+    printf("API status: %i : %s\n", device_status, buf);
+}
+
+
+void print_range_status(VL53L0X_RangingMeasurementData_t* pRangingMeasurementData){
+    char buf[VL53L0X_MAX_STRING_LENGTH];
+    uint8_t RangeStatus;
+    RangeStatus = pRangingMeasurementData->RangeStatus;
+    VL53L0X_GetRangeStatusString(RangeStatus, buf);
+    //printf("Range Status: %i : %s\n", RangeStatus, buf);
+    //std::string trans(buf, 11);
+    //laserdata.status = trans;
+}
+
+
+VL53L0X_Error read_vl53l0x_sensor(VL53L0X_Dev_t *pvl53l0x_device) {
+    VL53L0X_Error device_status = VL53L0X_ERROR_NONE;
+    VL53L0X_RangingMeasurementData_t    RangingMeasurementData;
+    //if(device_status == VL53L0X_ERROR_NONE) {
+	//struct timespec tstart = {0, 0}, tend = {0, 0};
+	//clock_gettime(CLOCK_MONOTONIC, &tstart);
+        //for(i=0;i<100;i++){
+	//for(;;){
+        //    printf ("Call of VL53L0X_PerformSingleRangingMeasurement\n");
+            device_status = VL53L0X_PerformSingleRangingMeasurement(pvl53l0x_device, &RangingMeasurementData);
+
+        //    print_pal_error(Status);
+            print_range_status(&RangingMeasurementData);
+
+           
+        //    if (Status != VL53L0X_ERROR_NONE) break;
+
+            printf("Measured distance: %i\n\n", RangingMeasurementData.RangeMilliMeter);
+	    //    laserdata.dist = RangingMeasurementData.RangeMilliMeter;
+	//    clock_gettime(CLOCK_MONOTONIC, &tend);
+	    //printf("Took time: %.5f seconds\n", ((double)tend.tv_sec + 1.0e-9*tend.tv_nsec) - 
+		//				((double)tstart.tv_sec + 1.0e-9*tstart.tv_nsec));
+	    //clock_gettime(CLOCK_MONOTONIC, &tstart);
+
+        //}
+	    //}
+    return device_status;
+}
+
+int main(int argc, char **argv) {
+
+    VL53L0X_Dev_t vl53l0x_device;
+    VL53L0X_Dev_t *pvl53l0x_device = &vl53l0x_device;
+    VL53L0X_Error device_status = VL53L0X_ERROR_NONE;
+
+    int32_t status_int;
+
+    ros::init(argc, argv, "vl53l0x_sensor1");
+    ros::NodeHandle nh;
+    ros::Publisher range_pub = nh.advertise<std_msgs::Int16>("/laser_data", 10);
+   
+    setup_vl53l0x(pvl53l0x_device);
+
+    printf("\n\n***************Start ranging***************\n\n");
+    while (ros::ok()){
+        read_vl53l0x_sensor(pvl53l0x_device);
+        //range_pub.publish(sensorData);
+        ros::spinOnce();
+    }
+ 
+    VL53L0X_i2c_close();
+    print_pal_error(device_status);
+    return (0);
+}

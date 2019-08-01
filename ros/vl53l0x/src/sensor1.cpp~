@@ -1,0 +1,109 @@
+//
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include "ros/ros.h"
+#include "vl53l0x_api.h"
+#include "vl53l0x_platform.h"
+
+VL53L0X_Dev_t vl53l0x_device;
+VL53L0X_Dev_t *pvl53l0x_device = &vl53l0x_device;
+VL53L0X_Version_t device_version;
+VL53L0X_Version_t *pdevice_version   = &device_version;
+VL53L0X_DeviceInfo_t device_info;
+VL53L0X_Error device_status = VL53L0X_ERROR_NONE;
+
+void setup_vl53l0x(void) {
+      pvl53l0x_device->I2cDevAddr      = 0x29;
+
+    pvl53l0x_device->fd = VL53L0X_i2c_init("/dev/i2c-1", pvl53l0x_device->I2cDevAddr);//choose between i2c-0 and i2c-1; On the raspberry pi zero, i2c-1 are pins 2 and 3
+    if (vl53l0x_device.fd<0) {
+        device_status = VL53L0X_ERROR_CONTROL_INTERFACE;
+        printf ("Failed to init\n");
+    }
+
+    /*
+     *  Get the version of the VL53L0X API running in the firmware
+     */
+
+    if(device_status == VL53L0X_ERROR_NONE)
+    {
+        status_int = VL53L0X_GetVersion(pdevice_version);
+        if (status_int != 0)
+            device_status = VL53L0X_ERROR_CONTROL_INTERFACE;
+    }
+
+    /*
+     *  Verify the version of the VL53L0X API running in the firmware
+     */
+
+    if(device_status == VL53L0X_ERROR_NONE)
+    {
+        if( pdevice_version->major != VERSION_REQUIRED_MAJOR ||
+            pdevice_version->minor != VERSION_REQUIRED_MINOR ||
+            pdevice_version->build != VERSION_REQUIRED_BUILD )
+        {
+            printf("VL53L0X API Version Error: Your firmware has %d.%d.%d (revision %d). This example requires %d.%d.%d.\n",
+                pdevice_version->major, pdevice_version->minor, pdevice_version->build, pdevice_version->revision,
+                VERSION_REQUIRED_MAJOR, VERSION_REQUIRED_MINOR, VERSION_REQUIRED_BUILD);
+        }
+    }
+
+
+    if(device_status == VL53L0X_ERROR_NONE)
+    {
+        printf ("Call of VL53L0X_DataInit\n");
+        device_status = VL53L0X_DataInit(&vl53l0x_device); // Data initialization
+        print_pal_error(device_status);
+    }
+
+    if(device_status == VL53L0X_ERROR_NONE)
+    {
+        device_status = VL53L0X_GetDeviceInfo(&vl53l0x_device, &device_info);
+        if(device_status == VL53L0X_ERROR_NONE)
+        {
+            printf("VL53L0X_GetDeviceInfo:\n");
+            printf("Device Name : %s\n", device_info.Name);
+            printf("Device Type : %s\n", device_info.Type);
+            printf("Device ID : %s\n", device_info.ProductId);
+            printf("ProductRevisionMajor : %d\n", device_info.ProductRevisionMajor);
+            printf("ProductRevisionMinor : %d\n", device_info.ProductRevisionMinor);
+
+        if ((device_info.ProductRevisionMinor != 1) && (device_info.ProductRevisionMinor != 1)) {
+        	printf("Error expected cut 1.1 but found cut %d.%d\n",
+                       device_info.ProductRevisionMajor, device_info.ProductRevisionMinor);
+                device_status = VL53L0X_ERROR_NOT_SUPPORTED;
+            }
+        }
+        print_pal_error(device_status);
+    }
+
+    if(device_status == VL53L0X_ERROR_NONE)
+    {
+        device_status = InitializeDevice(pvl53l0x_device);
+    }
+
+}
+
+
+int main(int argc, char **argv) {
+
+    ros::init(argc, argv, "vl53l0x_sensor1");
+    ros::NodeHandle nh;
+    ros::Publisher range_pub = nh.advertise<std_msgs::Int32>("/laser_data", 10);
+    //ros::ServiceServer getSensorDataService = nh.advertiseService("get_sensor_data_service" ,getSensorData);
+   
+    setup_vl53l0x();
+
+    Sensor_Calibration(pSensorOne);
+
+    printf("\n\n***************Start ranging***************\n\n");
+    while (ros::ok()){
+        Start_Ranging();
+        rang_pub.publish(sensorData);
+        ros::spinOnce();
+    }
+ 
+    VL53L0X_i2c_close();
+    return (0);
+}
