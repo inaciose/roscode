@@ -1,0 +1,2 @@
+https://gist.github.com/jarvisschultz/7a886ed2714fac9f5226
+https://answers.ros.org/question/37185/how-to-initialize-a-uint8multiarray-message/
